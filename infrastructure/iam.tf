@@ -1,0 +1,108 @@
+# IAM Role for this EC2 Instance
+resource "aws_iam_role" "instance_role" {
+  name = "${var.instance_name}-role-${var.environment}"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+
+  tags = {
+    Name        = "${var.instance_name}-role"
+    Environment = var.environment
+  }
+}
+
+# IAM Policy for S3 and Glue (for Iceberg)
+resource "aws_iam_role_policy" "iceberg_policy" {
+  name = "${var.instance_name}-iceberg-policy"
+  role = aws_iam_role.instance_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:PutObject",
+          "s3:DeleteObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.iceberg_data.arn,
+          "${aws_s3_bucket.iceberg_data.arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "glue:GetDatabase",
+          "glue:GetDatabases",
+          "glue:CreateDatabase",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:CreateTable",
+          "glue:UpdateTable",
+          "glue:DeleteTable",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+          "glue:CreatePartition",
+          "glue:UpdatePartition",
+          "glue:DeletePartition",
+          "glue:BatchCreatePartition",
+          "glue:BatchDeletePartition"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# IAM Policy for reading config bucket
+resource "aws_iam_role_policy" "config_policy" {
+  name = "${var.instance_name}-config-policy"
+  role = aws_iam_role.instance_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",
+          "s3:ListBucket"
+        ]
+        Resource = [
+          aws_s3_bucket.config.arn,
+          "${aws_s3_bucket.config.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# Instance Profile
+resource "aws_iam_instance_profile" "instance_profile" {
+  name = "${var.instance_name}-profile-${var.environment}"
+  role = aws_iam_role.instance_role.name
+}
+
+# Output the IAM instance profile ARN for manual attachment
+output "instance_profile_arn" {
+  description = "IAM instance profile ARN"
+  value       = aws_iam_instance_profile.instance_profile.arn
+}
+
+output "attach_iam_command" {
+  description = "Command to attach IAM role to this instance"
+  value       = "aws ec2 associate-iam-instance-profile --instance-id ${local.instance_id} --iam-instance-profile Name=${aws_iam_instance_profile.instance_profile.name}"
+}

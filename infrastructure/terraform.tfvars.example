@@ -1,0 +1,4 @@
+instance_name = ""
+aws_region    = ""
+environment   = ""
+websocket_url = ""

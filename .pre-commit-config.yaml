@@ -1,0 +1,61 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-added-large-files
+-   repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1
+    hooks:
+    -   id: shellcheck
+- repo: https://github.com/antonbabenko/pre-commit-terraform
+  rev: v1.105.0
+  hooks:
+    - id: terraform_fmt
+    - id: terraform_tflint
+      args:
+      - --init
+      - --config=__GIT_WORKING_DIR__/.tflint.hcl
+    - id: terraform_validate
+    - id: terraform_checkov
+    - id: terragrunt_fmt
+    - id: terragrunt_validate
+- repo: https://github.com/DavidAnson/markdownlint-cli2
+  rev: v0.21.0
+  hooks:
+  - id: markdownlint-cli2
+- repo: https://github.com/astral-sh/uv-pre-commit
+  rev: "0.10.3"
+  hooks:
+    - id: uv-lock
+      files: ^python_jobs/pyproject\.toml$
+      args: [--project, python_jobs]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.15.1
+  hooks:
+    - id: ruff-check
+      args: [ --fix ]
+    - id: ruff-format
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.19.1
+  hooks:
+  - id: mypy
+    files: ^python_jobs/src/
+- repo: local
+  hooks:
+  # Turn this on once we have tests set up
+  # - id: pytest
+  #   name: Run pytest
+  #   entry: bash -c 'cd python_jobs && pytest'
+  #   language: system
+  #   pass_filenames: false
+  #   files: ^python_jobs/(src|tests)/.*\.py$
+  #   verbose: true
+  - id: version-status-info
+    name: Version status info
+    entry: .github/scripts/check-version-sync.sh
+    language: system
+    verbose: true
+    stages: [pre-push]

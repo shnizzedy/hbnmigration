@@ -1,0 +1,35 @@
+# .editorconfig
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+trim_trailing_whitespace = true
+
+[*.{tf,tfvars}]
+indent_style = space
+indent_size = 2
+
+[{Makefile,*.Makefile}]
+indent_style = tab
+indent_size = 4
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.sh]
+indent_style = space
+indent_size = 2
+
+[*.tpl]
+indent_style = space
+indent_size = 2
+
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
