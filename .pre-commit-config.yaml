@@ -53,6 +53,12 @@ repos:
   #   pass_filenames: false
   #   files: ^python_jobs/(src|tests)/.*\.py$
   #   verbose: true
+  - id: sync-version
+    name: Sync VERSION to Node.js package files
+    entry: scripts/sync-version.sh
+    language: system
+    files: ^VERSION$
+    pass_filenames: false
   - id: version-status-info
     name: Version status info
     entry: .github/scripts/check-version-sync.sh

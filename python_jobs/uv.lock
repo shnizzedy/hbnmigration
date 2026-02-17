@@ -386,7 +386,6 @@ wheels = [
 
 [[package]]
 name = "hbnmigration"
-version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
@@ -412,7 +411,7 @@ requires-dist = [
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.8.0" },
     { name = "pandas", specifier = ">=2.1.0" },
     { name = "pyarrow", specifier = ">=14.0.0" },
-    { name = "pyiceberg", extras = ["s3fs", "glue", "pyarrow"], specifier = ">=0.5.0" },
+    { name = "pyiceberg", extras = ["glue", "pyarrow", "s3fs"], specifier = ">=0.5.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.4.0" },
     { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.23.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
