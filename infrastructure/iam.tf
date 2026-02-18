@@ -61,7 +61,11 @@ resource "aws_iam_role_policy" "iceberg_policy" {
           "glue:BatchCreatePartition",
           "glue:BatchDeletePartition"
         ]
-        Resource = "*"
+        Resource = [
+          "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:catalog",
+          "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:database/hbnmigration",
+          "arn:aws:glue:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/hbnmigration/*"
+        ]
       }
     ]
   })
@@ -106,3 +110,48 @@ output "attach_iam_command" {
   description = "Command to attach IAM role to this instance"
   value       = "aws ec2 associate-iam-instance-profile --instance-id ${local.instance_id} --iam-instance-profile Name=${aws_iam_instance_profile.instance_profile.name}"
 }
+
+# Policy for Systems Manager
+resource "aws_iam_role_policy" "ssm_policy" {
+  count = var.enable_session_manager ? 1 : 0
+
+  name = "${var.instance_name}-ssm-policy"
+  role = aws_iam_role.instance_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:UpdateInstanceInformation",
+          "ssmmessages:CreateControlChannel",
+          "ssmmessages:CreateDataChannel",
+          "ssmmessages:OpenControlChannel",
+          "ssmmessages:OpenDataChannel"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "ec2messages:GetMessages"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+          }
+        }
+      }
+    ]
+  })
+}
+
+# Add this data source if it doesn't exist
+data "aws_caller_identity" "current" {}

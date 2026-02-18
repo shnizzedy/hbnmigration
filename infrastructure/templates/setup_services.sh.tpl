@@ -3,35 +3,47 @@ set -e
 
 CURRENT_USER=$(whoami)
 
-echo "========================================"
-echo "Setting up monitoring services"
-echo "========================================"
+echo "============================================"
+echo "Setting up HBN migration monitoring services"
+echo "============================================"
 echo "Current User: $CURRENT_USER"
 echo "S3 Bucket: ${S3_BUCKET}"
 echo "Config Bucket: ${CONFIG_BUCKET}"
 echo "Region: ${AWS_REGION}"
 echo "Environment: ${ENVIRONMENT}"
 echo "WebSocket URL: ${WEBSOCKET_URL}"
-echo "========================================"
+echo "============================================"
 
 # Update system packages
 echo "Updating system packages..."
 apt-get update -qq
 
-# Install Python 3.11 (if not already installed)
-if ! command -v python3.11 &> /dev/null; then
-    echo "Installing Python 3.11..."
+# Install/Update SSM Agent (usually pre-installed on Ubuntu)
+echo "Checking SSM Agent..."
+if ! systemctl is-active --quiet amazon-ssm-agent; then
+    echo "Installing SSM Agent..."
+    apt-get install -y amazon-ssm-agent
+    systemctl enable amazon-ssm-agent
+    systemctl start amazon-ssm-agent
+    echo "✓ SSM Agent installed and started"
+else
+    echo "✓ SSM Agent already running"
+fi
+
+# Install Python 3.12 (if not already installed)
+if ! command -v python3.12 &> /dev/null; then
+    echo "Installing Python 3.12..."
     apt-get install -y software-properties-common
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
-    apt-get install -y python3.11 python3.11-venv python3.11-dev
+    apt-get install -y python3.12 python3.12-venv python3.12-dev
 
-    # Set Python 3.11 as default
-    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-    update-alternatives --set python3 /usr/bin/python3.11
-    echo "✓ Python 3.11 installed"
+    # Set Python 3.12 as default
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+    update-alternatives --set python3 /usr/bin/python3.12
+    echo "✓ Python 3.12 installed"
 else
-    echo "✓ Python 3.11 already installed"
+    echo "✓ Python 3.12 already installed"
 fi
 
 # Install UV (if not already installed)
@@ -70,12 +82,12 @@ fi
 apt-get install -y build-essential git curl wget unzip
 
 # Determine repository paths
-REPO_ROOT="/home/$CURRENT_USER/monitoring-project"
+REPO_ROOT="/home/$CURRENT_USER/hbnmigration"
 PYTHON_JOBS_PATH="$REPO_ROOT/python_jobs"
 NODE_JOBS_PATH="$REPO_ROOT/node_jobs"
 
 # Install Python packages using UV
-echo "Installing Python monitoring-services package with UV..."
+echo "Installing Python hbnmigration package with UV..."
 
 if [ -d "$PYTHON_JOBS_PATH" ] && [ -f "$PYTHON_JOBS_PATH/pyproject.toml" ]; then
     echo "Installing from: $PYTHON_JOBS_PATH"
@@ -84,7 +96,7 @@ if [ -d "$PYTHON_JOBS_PATH" ] && [ -f "$PYTHON_JOBS_PATH/pyproject.toml" ]; then
     uv pip install --system "$PYTHON_JOBS_PATH"
 
     # Verify installation
-    python3 -c "import monitoring_services; print(f'✓ Installed monitoring_services v{monitoring_services.__version__}')"
+    python3 -c "import hbnmigration; print(f'✓ Installed hbnmigration v{hbnmigration.__version__}')"
 else
     echo "❌ Error: python_jobs not found at $PYTHON_JOBS_PATH"
     exit 1

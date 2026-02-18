@@ -7,6 +7,15 @@ insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
 
+# Add these
+[*.{json,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.js]
+indent_style = space
+indent_size = 2
+
 [*.{tf,tfvars}]
 indent_style = space
 indent_size = 2

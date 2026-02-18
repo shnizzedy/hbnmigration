@@ -2,6 +2,15 @@
 
 Infrastructure and code for Healthy Brain Network data migration.
 
+## Overview
+
+AWS infrastructure running on EC2 with:
+
+- Python services for data processing
+- Node.js services for export automation
+- Apache Iceberg for logging and data lakehouse
+- Automated deployment via Terraform
+
 ## Prerequisites
 
 ### On EC2 Instance

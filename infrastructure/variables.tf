@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "instance_name" {
   description = "Name of the EC2 instance/project"
   type        = string
-  default     = "monitoring-curious-vm"
+  default     = "hbnmigration-vm"
 }
 
 variable "environment" {
@@ -20,4 +20,11 @@ variable "websocket_url" {
   description = "WebSocket URL to monitor"
   type        = string
   default     = "wss://api-v2.gettingcurious.com/alerts"
+}
+
+
+variable "enable_session_manager" {
+  description = "Enable AWS Systems Manager Session Manager"
+  type        = bool
+  default     = true
 }

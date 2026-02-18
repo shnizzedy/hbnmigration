@@ -8,6 +8,7 @@
 **/.terraform.lock.hcl.backup
 crash.log
 crash.*.log
+.tflint.d/
 
 # Terraform plan files
 *.tfplan
@@ -60,7 +61,7 @@ yarn-error.log*
 dist/
 build/
 
-# Python (for local testing)
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -68,8 +69,14 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+htmlcov/
+.coverage
+*.coverage
 venv/
 env/
+.venv/
+dist/
+build/
 
 # Logs
 *.log

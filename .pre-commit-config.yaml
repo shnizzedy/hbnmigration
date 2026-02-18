@@ -1,15 +1,26 @@
+ci:
+  skip:
+    - terraform_fmt
+    - terraform_tflint
+    - terraform_validate
+    - terraform_checkov
+    - terragrunt_fmt
+    - terragrunt_validate
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
-    hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-yaml
-    -   id: check-added-large-files
--   repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
-    hooks:
-    -   id: shellcheck
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v6.0.0
+  hooks:
+  - id: trailing-whitespace
+  - id: end-of-file-fixer
+  - id: check-yaml
+  - id: check-json
+  - id: check-added-large-files
+  - id: check-merge-conflict
+  - id: detect-private-key
+- repo: https://github.com/shellcheck-py/shellcheck-py
+  rev: v0.11.0.1
+  hooks:
+  - id: shellcheck
 - repo: https://github.com/antonbabenko/pre-commit-terraform
   rev: v1.105.0
   hooks:
@@ -45,17 +56,9 @@ repos:
     files: ^python_jobs/src/
 - repo: local
   hooks:
-  # Turn this on once we have tests set up
-  # - id: pytest
-  #   name: Run pytest
-  #   entry: bash -c 'cd python_jobs && pytest'
-  #   language: system
-  #   pass_filenames: false
-  #   files: ^python_jobs/(src|tests)/.*\.py$
-  #   verbose: true
   - id: sync-version
     name: Sync VERSION to Node.js package files
-    entry: scripts/sync-version.sh
+    entry: .github/scripts/sync-version.sh
     language: system
     files: ^VERSION$
     pass_filenames: false
