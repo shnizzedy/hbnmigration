@@ -36,20 +36,31 @@ fi
 if ! command -v uv &> /dev/null; then
     echo "Installing UV..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
-    # Add to PATH for current session
-    export PATH="$HOME/.cargo/bin:$PATH"
-    # Add to shell profile for future sessions
-    if ! grep -q 'cargo/bin' ~/.bashrc; then
-        echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
-    fi
     echo "✓ UV installed"
 else
     echo "✓ UV already installed"
-    uv --version
 fi
 
-# Ensure UV is in PATH
-export PATH="$HOME/.cargo/bin:$PATH"
+# Ensure UV is in PATH - check multiple possible locations
+if [ -f "/root/.local/bin/uv" ]; then
+    export PATH="/root/.local/bin:$$PATH"
+elif [ -f "/root/.cargo/bin/uv" ]; then
+    export PATH="/root/.cargo/bin:$$PATH"
+elif [ -f "/home/$$CURRENT_USER/.cargo/bin/uv" ]; then
+    export PATH="/home/$$CURRENT_USER/.cargo/bin:$$PATH"
+elif [ -f "/home/$$CURRENT_USER/.local/bin/uv" ]; then
+    export PATH="/home/$$CURRENT_USER/.local/bin:$$PATH"
+fi
+
+# Verify UV is now accessible
+if ! command -v uv &> /dev/null; then
+    echo "❌ Error: UV installed but not found in PATH"
+    echo "Searched paths: /root/.local/bin, /root/.cargo/bin, /home/$$CURRENT_USER/.cargo/bin"
+    exit 1
+fi
+
+echo "UV location: $$(command -v uv)"
+uv --version
 
 # Install NodeJS (if not already installed)
 if ! command -v node &> /dev/null; then
