@@ -59,7 +59,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "iceberg_data" {
     id     = "archive-old-data"
     status = "Enabled"
 
-    filter { prefix = "" }
+    filter {}
 
     # Move data older than 90 days to cheaper storage
     transition {
@@ -327,7 +327,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "logs" {
     id     = "expire-old-logs"
     status = "Enabled"
 
-    filter { prefix = "" }
+    filter {}
     expiration {
       days = 90 # Keep logs for 90 days
     }

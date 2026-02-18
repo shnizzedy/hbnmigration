@@ -8,7 +8,7 @@ class Config:
 
     # AWS
     S3_BUCKET = os.getenv("ICEBERG_S3_BUCKET")
-    AWS_REGION = os.getenv("AWS_REGION", "us-east-1e")
+    AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 
     # WebSocket
     WEBSOCKET_URL = os.getenv("WEBSOCKET_URL")
