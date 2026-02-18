@@ -160,30 +160,6 @@ if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     export PATH="$HOME/.local/bin:$PATH"
 fi
 
-# Install UV (Python package manager)
-echo ""
-echo "Installing UV..."
-if ! command -v uv &> /dev/null; then
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-
-    # Add to PATH
-    export PATH="$HOME/.cargo/bin:$PATH"
-
-    if ! grep -q 'cargo/bin' ~/.bashrc; then
-        cat >> ~/.bashrc << 'EOF'
-export PATH="$HOME/.cargo/bin:$PATH"
-EOF
-    fi
-
-    echo "✓ UV installed"
-else
-    echo "✓ UV already installed"
-    uv --version
-fi
-
-# Ensure UV is in PATH
-export PATH="$HOME/.cargo/bin:$PATH"
-
 # Verify Python linters
 if command -v ruff &> /dev/null; then
     echo "✓ ruff installed: $(ruff --version)"
