@@ -56,7 +56,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "iceberg_data" {
   bucket = aws_s3_bucket.iceberg_data.id
 
   rule {
-    id     = "archive-old-data"
+    id     = "lifecycle-policy"
     status = "Enabled"
 
     filter {}
@@ -73,18 +73,17 @@ resource "aws_s3_bucket_lifecycle_configuration" "iceberg_data" {
       storage_class = "GLACIER_IR"
     }
 
+    # Expire data after 2 years
+    expiration {
+      days = 730
+    }
+
     # Clean up old versions after 30 days
     noncurrent_version_expiration {
       noncurrent_days = 30
     }
-  }
 
-  rule {
-    id     = "clean-incomplete-multipart-uploads"
-    status = "Enabled"
-
-    filter {}
-
+    # Clean up incomplete multipart uploads
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
