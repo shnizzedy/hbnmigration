@@ -6,6 +6,7 @@ ci:
     - terraform_checkov
     - terragrunt_fmt
     - terragrunt_validate
+    - sync-version
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v6.0.0
@@ -59,12 +60,12 @@ repos:
   - id: sync-version
     name: Sync VERSION to Node.js package files
     entry: .github/scripts/sync-version.sh
-    language: system
+    language: unsupported
     files: ^VERSION$
     pass_filenames: false
   - id: version-status-info
     name: Version status info
     entry: .github/scripts/check-version-sync.sh
-    language: system
+    language: unsupported
     verbose: true
     stages: [pre-push]
