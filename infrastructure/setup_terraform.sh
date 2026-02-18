@@ -139,11 +139,11 @@ else
     shellcheck --version | head -2
 fi
 
-# Python 3 and pip (needed for Python linters)
-if ! command -v python3 &> /dev/null; then
-    echo "Installing Python 3..."
+# Python 3 and pip
+if ! command -v python3 &> /dev/null || ! command -v pip3 &> /dev/null; then
+    echo "Installing Python 3 and pip..."
     sudo apt-get install -y python3 python3-pip
-    echo "✓ Python 3 installed"
+    echo "✓ Python 3 and pip installed"
 else
     echo "✓ Python 3 already installed"
     python3 --version
