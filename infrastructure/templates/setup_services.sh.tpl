@@ -31,6 +31,7 @@ if ! command -v uv &> /dev/null; then
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
     pipx ensurepath
+    export PATH="$$PATH:/root/.local/bin"
     pipx install --quiet uv
     echo "✓ Python 3.12 installed"
 else
