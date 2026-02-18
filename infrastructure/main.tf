@@ -1,10 +1,6 @@
 terraform {
   required_version = ">= 1.0"
   required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.32"
-    }
     local = {
       source  = "hashicorp/local"
       version = "~> 2.4"
@@ -16,9 +12,6 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = var.aws_region
-}
 locals {
   instance_id = var.instance_id
 }
@@ -26,11 +19,10 @@ locals {
 # Generate setup script from template
 locals {
   setup_script_content = templatefile("${path.module}/templates/setup_services.sh.tpl", {
-    S3_BUCKET     = aws_s3_bucket.iceberg_data.id
-    CONFIG_BUCKET = aws_s3_bucket.config.id
     AWS_REGION    = var.aws_region
     ENVIRONMENT   = var.environment
     WEBSOCKET_URL = var.websocket_url
+    INSTANCE_NAME = var.instance_name
   })
 }
 
@@ -49,12 +41,10 @@ resource "null_resource" "setup_services" {
   }
 
   provisioner "local-exec" {
-    command = "sudo ${local_file.setup_script.filename}"
+    command = "sudo bash ${local_file.setup_script.filename}"
   }
 
   depends_on = [
-    local_file.setup_script,
-    aws_s3_object.websocket_service,
-    aws_s3_object.api_jobs_service
+    local_file.setup_script
   ]
 }

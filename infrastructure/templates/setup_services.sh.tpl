@@ -7,8 +7,7 @@ echo "============================================"
 echo "Setting up HBN migration monitoring services"
 echo "============================================"
 echo "Current User: $CURRENT_USER"
-echo "S3 Bucket: ${S3_BUCKET}"
-echo "Config Bucket: ${CONFIG_BUCKET}"
+echo "Instance: ${INSTANCE_NAME}"
 echo "Region: ${AWS_REGION}"
 echo "Environment: ${ENVIRONMENT}"
 echo "WebSocket URL: ${WEBSOCKET_URL}"
@@ -18,18 +17,6 @@ echo "============================================"
 echo "Updating system packages..."
 apt-get update -qq
 
-# Install/Update SSM Agent (usually pre-installed on Ubuntu)
-echo "Checking SSM Agent..."
-if ! systemctl is-active --quiet amazon-ssm-agent; then
-    echo "Installing SSM Agent..."
-    apt-get install -y amazon-ssm-agent
-    systemctl enable amazon-ssm-agent
-    systemctl start amazon-ssm-agent
-    echo "✓ SSM Agent installed and started"
-else
-    echo "✓ SSM Agent already running"
-fi
-
 # Install Python 3.12 (if not already installed)
 if ! command -v python3.12 &> /dev/null; then
     echo "Installing Python 3.12..."
@@ -37,7 +24,6 @@ if ! command -v python3.12 &> /dev/null; then
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
     apt-get install -y python3.12 python3.12-venv python3.12-dev
-
     # Set Python 3.12 as default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
@@ -50,15 +36,12 @@ fi
 if ! command -v uv &> /dev/null; then
     echo "Installing UV..."
     curl -LsSf https://astral.sh/uv/install.sh | sh
-
     # Add to PATH for current session
     export PATH="$HOME/.cargo/bin:$PATH"
-
     # Add to shell profile for future sessions
     if ! grep -q 'cargo/bin' ~/.bashrc; then
         echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> ~/.bashrc
     fi
-
     echo "✓ UV installed"
 else
     echo "✓ UV already installed"
@@ -88,30 +71,24 @@ NODE_JOBS_PATH="$REPO_ROOT/node_jobs"
 
 # Install Python packages using UV
 echo "Installing Python hbnmigration package with UV..."
-
 if [ -d "$PYTHON_JOBS_PATH" ] && [ -f "$PYTHON_JOBS_PATH/pyproject.toml" ]; then
     echo "Installing from: $PYTHON_JOBS_PATH"
-
     # UV can install directly from path
     uv pip install --system "$PYTHON_JOBS_PATH"
-
     # Verify installation
     python3 -c "import hbnmigration; print(f'✓ Installed hbnmigration v{hbnmigration.__version__}')"
 else
     echo "❌ Error: python_jobs not found at $PYTHON_JOBS_PATH"
     exit 1
 fi
-
 echo "✓ Python packages installed"
 
 # Install Node.js packages
 echo "Installing Node.js packages..."
-
 if [ -d "$NODE_JOBS_PATH" ] && [ -f "$NODE_JOBS_PATH/package.json" ]; then
     echo "Installing from: $NODE_JOBS_PATH"
     cd "$NODE_JOBS_PATH"
     npm install --production --quiet
-
     # Verify installation
     if [ -d "$NODE_JOBS_PATH/node_modules" ]; then
         echo "✓ Node.js packages installed"
@@ -128,46 +105,92 @@ fi
 echo "Creating directories..."
 mkdir -p /opt/app
 mkdir -p /var/log/app
-mkdir -p /etc/iceberg
 chown -R $CURRENT_USER:$CURRENT_USER /opt/app /var/log/app
 
-# Download systemd service files from S3
-echo "Downloading service files from S3..."
-aws s3 cp s3://${CONFIG_BUCKET}/websocket-monitor.service /tmp/websocket-monitor.service
-aws s3 cp s3://${CONFIG_BUCKET}/api-jobs.service /tmp/api-jobs.service
+# Create systemd service files directly (no S3 download)
+echo "Creating service files..."
 
-# Replace User=ubuntu with current user in service files
-sed -i "s/User=ubuntu/User=$CURRENT_USER/g" /tmp/websocket-monitor.service
-sed -i "s/User=ubuntu/User=$CURRENT_USER/g" /tmp/api-jobs.service
+# WebSocket Monitor Service
+cat > /etc/systemd/system/websocket-monitor.service <<EOF
+[Unit]
+Description=WebSocket Monitor Service
+After=network.target
 
-# Move service files to systemd
-mv /tmp/websocket-monitor.service /etc/systemd/system/
-mv /tmp/api-jobs.service /etc/systemd/system/
+[Service]
+Type=simple
+User=$CURRENT_USER
+WorkingDirectory=$PYTHON_JOBS_PATH
+Environment="PATH=/home/$CURRENT_USER/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PYTHONUNBUFFERED=1"
+Environment="AWS_REGION=${AWS_REGION}"
+Environment="WEBSOCKET_URL=${WEBSOCKET_URL}"
+Environment="ENVIRONMENT=${ENVIRONMENT}"
+ExecStart=/usr/bin/python3 -m hbnmigration.websocket_monitor
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/app/websocket-monitor.log
+StandardError=append:/var/log/app/websocket-monitor.log
 
-echo "✓ Service files configured"
+[Install]
+WantedBy=multi-user.target
+EOF
 
-# Create Iceberg catalog configuration
-echo "Creating Iceberg configuration..."
+# API Jobs Service
+cat > /etc/systemd/system/api-jobs.service <<EOF
+[Unit]
+Description=API Jobs Service
+After=network.target
+
+[Service]
+Type=simple
+User=$CURRENT_USER
+WorkingDirectory=$NODE_JOBS_PATH
+Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="NODE_ENV=production"
+Environment="AWS_REGION=${AWS_REGION}"
+Environment="WEBSOCKET_URL=${WEBSOCKET_URL}"
+Environment="ENVIRONMENT=${ENVIRONMENT}"
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/app/api-jobs.log
+StandardError=append:/var/log/app/api-jobs.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+echo "✓ Service files created"
+
+# Create local Iceberg warehouse
+echo "Setting up local Iceberg warehouse..."
+mkdir -p /opt/iceberg/warehouse
+chown -R "$CURRENT_USER":"$CURRENT_USER" /opt/iceberg
+
+# Create Iceberg catalog configuration (local filesystem)
 cat > /etc/iceberg/catalog.yaml <<EOF
 catalog:
   default:
-    type: glue
-    s3.endpoint: https://s3.${AWS_REGION}.amazonaws.com
-    s3.region: ${AWS_REGION}
-    warehouse: s3://${S3_BUCKET}/warehouse
-    glue.skip-name-validation: true
+    type: hadoop
+    warehouse: file:///opt/iceberg/warehouse
 EOF
 
-chown $CURRENT_USER:$CURRENT_USER /etc/iceberg/catalog.yaml
+chown "$CURRENT_USER":"$CURRENT_USER" /etc/iceberg/catalog.yaml
 
 # Create environment file
 cat > /etc/profile.d/iceberg.sh <<EOF
 export ICEBERG_CATALOG_CONFIG=/etc/iceberg/catalog.yaml
-export ICEBERG_S3_BUCKET=${S3_BUCKET}
-export ICEBERG_WAREHOUSE=s3://${S3_BUCKET}/warehouse
+export ICEBERG_WAREHOUSE=file:///opt/iceberg/warehouse
+export AWS_REGION=${AWS_REGION}
+export WEBSOCKET_URL=${WEBSOCKET_URL}
+EOF
+
+# Create environment file
+cat > /etc/profile.d/app.sh <<EOF
 export AWS_REGION=${AWS_REGION}
 export AWS_DEFAULT_REGION=${AWS_REGION}
 export WEBSOCKET_URL=${WEBSOCKET_URL}
+export ENVIRONMENT=${ENVIRONMENT}
 EOF
 
 echo "✓ Configuration files created"
