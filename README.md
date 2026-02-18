@@ -34,7 +34,7 @@ The setup script installs all required tools:
 - One-time setup: Install Terraform
 
    ```BASH
-   ./setup_terraform.sh
+   ./infrastructure/setup_terraform.sh
    ```
 
 - Configure
