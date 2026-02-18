@@ -151,7 +151,7 @@ fi
 
 # Python linters: ruff and mypy
 echo "Installing Python linters..."
-pip3 install --user --quiet ruff mypy
+python3 -m pip install --user --quiet ruff mypy
 
 # Add pip user bin to PATH if not already there
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -200,7 +200,7 @@ fi
 echo ""
 echo "Installing pre-commit (optional)..."
 if ! command -v pre-commit &> /dev/null; then
-    pip3 install --user --quiet pre-commit
+    python3 -m pip install --user --quiet pre-commit
     echo "✓ pre-commit installed"
 else
     echo "✓ pre-commit already installed"
