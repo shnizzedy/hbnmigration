@@ -142,7 +142,7 @@ fi
 # Python 3 and pip
 if ! command -v python3 &> /dev/null || ! command -v pipx &> /dev/null; then
     echo "Installing Python 3 and pip..."
-    sudo apt-get install -y python3 python3-pipx
+    sudo apt-get install -y python3 pipx
     echo "✓ Python 3 and pip installed"
 else
     echo "✓ Python 3 already installed"

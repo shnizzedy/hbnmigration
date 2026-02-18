@@ -31,7 +31,7 @@ if ! command -v uv &> /dev/null; then
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
     pipx ensurepath
-    export PATH="$$PATH:/root/.local/bin"
+    export PATH="$$PATH:/root/.local/bin:/usr/bin/"
     pipx install --quiet uv
     echo "✓ Python 3.12 installed"
 else
@@ -104,7 +104,7 @@ After=network.target
 Type=simple
 User=$CURRENT_USER
 WorkingDirectory=$PYTHON_JOBS_PATH
-Environment="PATH=/home/$CURRENT_USER/.cargo/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/home/$CURRENT_USER/.cargo/bin:/usr/local/bin:/root/.local/bin:/usr/bin:/bin"
 Environment="PYTHONUNBUFFERED=1"
 Environment="AWS_REGION=${AWS_REGION}"
 Environment="WEBSOCKET_URL=${WEBSOCKET_URL}"
@@ -129,7 +129,7 @@ After=network.target
 Type=simple
 User=$CURRENT_USER
 WorkingDirectory=$NODE_JOBS_PATH
-Environment="PATH=/usr/local/bin:/usr/bin:/bin"
+Environment="PATH=/usr/local/bin:/root/.local/bin:/usr/bin:/bin"
 Environment="NODE_ENV=production"
 Environment="AWS_REGION=${AWS_REGION}"
 Environment="WEBSOCKET_URL=${WEBSOCKET_URL}"
