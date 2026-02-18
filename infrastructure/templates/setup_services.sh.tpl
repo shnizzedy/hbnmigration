@@ -17,50 +17,24 @@ echo "============================================"
 echo "Updating system packages..."
 apt-get update -qq
 
+# Install build tools
+apt-get install -y bash build-essential git curl wget unzip
+
 # Install Python 3.12 (if not already installed)
 if ! command -v python3.12 &> /dev/null; then
     echo "Installing Python 3.12..."
     apt-get install -y software-properties-common
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
-    apt-get install -y python3.12 python3.12-venv python3.12-dev
+    apt-get install -y python3.12 python3.12-venv python3.12-dev python3.12-pipx
     # Set Python 3.12 as default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
+    pipx install --quiet uv
     echo "✓ Python 3.12 installed"
 else
     echo "✓ Python 3.12 already installed"
 fi
-
-# Install UV (if not already installed)
-if ! command -v uv &> /dev/null; then
-    echo "Installing UV..."
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    echo "✓ UV installed"
-else
-    echo "✓ UV already installed"
-fi
-
-# Ensure UV is in PATH - check multiple possible locations
-if [ -f "/root/.local/bin/uv" ]; then
-    export PATH="/root/.local/bin:$$PATH"
-elif [ -f "/root/.cargo/bin/uv" ]; then
-    export PATH="/root/.cargo/bin:$$PATH"
-elif [ -f "/home/$$CURRENT_USER/.cargo/bin/uv" ]; then
-    export PATH="/home/$$CURRENT_USER/.cargo/bin:$$PATH"
-elif [ -f "/home/$$CURRENT_USER/.local/bin/uv" ]; then
-    export PATH="/home/$$CURRENT_USER/.local/bin:$$PATH"
-fi
-
-# Verify UV is now accessible
-if ! command -v uv &> /dev/null; then
-    echo "❌ Error: UV installed but not found in PATH"
-    echo "Searched paths: /root/.local/bin, /root/.cargo/bin, /home/$$CURRENT_USER/.cargo/bin"
-    exit 1
-fi
-
-echo "UV location: $$(which uv)"
-uv --version
 
 # Install NodeJS (if not already installed)
 if ! command -v node &> /dev/null; then
@@ -71,9 +45,6 @@ if ! command -v node &> /dev/null; then
 else
     echo "✓ NodeJS already installed"
 fi
-
-# Install build tools
-apt-get install -y build-essential git curl wget unzip
 
 # Determine repository paths
 REPO_ROOT="/home/$CURRENT_USER/hbnmigration"
