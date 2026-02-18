@@ -140,9 +140,9 @@ else
 fi
 
 # Python 3 and pip
-if ! command -v python3 &> /dev/null || ! command -v pip3 &> /dev/null; then
+if ! command -v python3 &> /dev/null || ! command -v pipx &> /dev/null; then
     echo "Installing Python 3 and pip..."
-    sudo apt-get install -y python3 python3-pip
+    sudo apt-get install -y python3 python3-pipx
     echo "✓ Python 3 and pip installed"
 else
     echo "✓ Python 3 already installed"
@@ -151,7 +151,8 @@ fi
 
 # Python linters: ruff and mypy
 echo "Installing Python linters..."
-pip3 install --user --quiet ruff mypy
+pipx install --quiet mypy ruff
+pipx ensurepath
 
 # Add pip user bin to PATH if not already there
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
@@ -200,7 +201,7 @@ fi
 echo ""
 echo "Installing pre-commit (optional)..."
 if ! command -v pre-commit &> /dev/null; then
-    pip3 install --user --quiet pre-commit
+    pipx install --quiet pre-commit
     echo "✓ pre-commit installed"
 else
     echo "✓ pre-commit already installed"
