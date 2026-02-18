@@ -21,7 +21,7 @@ apt-get update -qq
 apt-get install -y bash build-essential git curl wget unzip
 
 # Install Python 3.12 (if not already installed)
-if ! command -v python3.12 &> /dev/null; then
+if ! command -v uv &> /dev/null; then
     echo "Installing Python 3.12..."
     apt-get install -y software-properties-common
     add-apt-repository -y ppa:deadsnakes/ppa
