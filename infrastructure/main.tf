@@ -23,11 +23,6 @@ locals {
   instance_id = var.instance_id
 }
 
-# Get information about current instance
-data "aws_instance" "self" {
-  instance_id = var.instance_id
-}
-
 # Generate setup script from template
 locals {
   setup_script_content = templatefile("${path.module}/templates/setup_services.sh.tpl", {

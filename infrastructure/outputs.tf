@@ -3,11 +3,6 @@ output "instance_id" {
   value       = local.instance_id
 }
 
-output "instance_public_ip" {
-  description = "Public IP of this instance"
-  value       = data.aws_instance.self.public_ip
-}
-
 output "s3_bucket_iceberg" {
   description = "S3 bucket for Iceberg data"
   value       = aws_s3_bucket.iceberg_data.id
