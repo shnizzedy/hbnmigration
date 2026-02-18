@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-CURRENT_USER=$(whoami)
+CURRENT_USER="${SUDO_USER:-$(whoami)}"
 
 echo "============================================"
 echo "Setting up HBN migration monitoring services"
