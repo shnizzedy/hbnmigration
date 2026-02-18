@@ -26,7 +26,7 @@ if ! command -v uv &> /dev/null; then
     apt-get install -y software-properties-common
     add-apt-repository -y ppa:deadsnakes/ppa
     apt-get update
-    apt-get install -y python3.12 python3.12-venv python3.12-dev python3.12-pipx
+    apt-get install -y python3.12 python3.12-venv python3.12-dev pipx
     # Set Python 3.12 as default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
