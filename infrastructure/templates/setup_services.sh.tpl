@@ -59,7 +59,7 @@ if ! command -v uv &> /dev/null; then
     exit 1
 fi
 
-echo "UV location: $$(command -v uv)"
+echo "UV location: $$(which uv)"
 uv --version
 
 # Install NodeJS (if not already installed)
