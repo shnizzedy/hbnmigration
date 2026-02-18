@@ -58,7 +58,7 @@ echo "Installing Python hbnmigration package with UV..."
 if [ -d "$PYTHON_JOBS_PATH" ] && [ -f "$PYTHON_JOBS_PATH/pyproject.toml" ]; then
     echo "Installing from: $PYTHON_JOBS_PATH"
     # UV can install directly from path
-    uv pip install --system "$PYTHON_JOBS_PATH"
+    uv pipx install --system "$PYTHON_JOBS_PATH"
     # Verify installation
     python3 -c "import hbnmigration; print(f'✓ Installed hbnmigration v{hbnmigration.__version__}')"
 else
