@@ -1,8 +1,0 @@
-#!/bin/bash
-# Wrapper script for lint.Makefile
-
-# Get the directory where this script lives
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# Run make from the infrastructure directory
-cd "$SCRIPT_DIR" && make -f lint.Makefile "$@"

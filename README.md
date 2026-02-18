@@ -43,25 +43,6 @@ The setup script installs all required tools:
    cp infrastructure/terraform.tfvars.example infrastructure/terraform.tfvars
    ```
 
-- Lint
-
-   ```BASH
-   # Show help
-   ./infrastructure/lint help
-
-   # Lint Python templates
-   ./infrastructure/lint lint-python
-
-   # Lint Bash templates
-   ./infrastructure/lint lint-bash
-
-   # Clean up
-   ./infrastructure/lint clean
-
-   # Lint everything and clean up
-   ./infrastructure/lint lint-all
-   ```
-
 - Deploy
 
    ```BASH
