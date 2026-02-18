@@ -46,6 +46,7 @@ The setup script installs all required tools:
 - Deploy
 
    ```BASH
+   cd infrastructure
    terraform init
    terraform validate
    terraform plan
