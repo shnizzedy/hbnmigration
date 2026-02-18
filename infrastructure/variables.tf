@@ -4,6 +4,11 @@ variable "aws_region" {
   default     = "us-east-1"
 }
 
+variable "instance_id" {
+  description = "EC2 instance ID for self-reference"
+  type        = string
+}
+
 variable "instance_name" {
   description = "Name of the EC2 instance/project"
   type        = string

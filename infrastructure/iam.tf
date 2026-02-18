@@ -153,26 +153,5 @@ resource "aws_iam_role_policy" "ssm_policy" {
   })
 }
 
-resource "aws_iam_role_policy" "terraform_ec2_permissions" {
-  name = "terraform-ec2-permissions"
-  role = "AmazonSSMRoleForInstancesQuickSetup"
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "ec2:DescribeInstances",
-          "ec2:DescribeVpcs",
-          "ec2:DescribeSubnets",
-          "ec2:DescribeSecurityGroups"
-        ]
-        Resource = "*"
-      }
-    ]
-  })
-}
-
 # Add this data source if it doesn't exist
 data "aws_caller_identity" "current" {}

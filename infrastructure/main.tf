@@ -1,14 +1,9 @@
 terraform {
   required_version = ">= 1.0"
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
-    }
-    http = {
-      source  = "hashicorp/http"
-      version = "~> 3.4"
     }
     local = {
       source  = "hashicorp/local"
@@ -24,19 +19,13 @@ terraform {
 provider "aws" {
   region = var.aws_region
 }
-
-# Get current instance metadata
-data "http" "instance_id" {
-  url = "http://169.254.169.254/latest/meta-data/instance-id"
-}
-
 locals {
-  instance_id = trimspace(data.http.instance_id.response_body)
+  instance_id = var.instance_id
 }
 
 # Get information about current instance
 data "aws_instance" "self" {
-  instance_id = local.instance_id
+  instance_id = var.instance_id
 }
 
 # Generate setup script from template

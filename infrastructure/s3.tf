@@ -144,28 +144,12 @@ resource "aws_s3_bucket_policy" "iceberg_data" {
             "aws:SecureTransport" = "false"
           }
         }
-      },
-      {
-        Sid       = "DenyAccessFromOutsideVPC"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.iceberg_data.arn,
-          "${aws_s3_bucket.iceberg_data.arn}/*"
-        ]
-        Condition = {
-          StringNotEquals = {
-            "aws:SourceVpce" = aws_vpc_endpoint.s3.id
-          }
-        }
       }
     ]
   })
 
   depends_on = [
-    aws_s3_bucket_public_access_block.iceberg_data,
-    aws_vpc_endpoint.s3
+    aws_s3_bucket_public_access_block.iceberg_data
   ]
 }
 
@@ -259,28 +243,12 @@ resource "aws_s3_bucket_policy" "config" {
             "aws:SecureTransport" = "false"
           }
         }
-      },
-      {
-        Sid       = "DenyAccessFromOutsideVPC"
-        Effect    = "Deny"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource = [
-          aws_s3_bucket.config.arn,
-          "${aws_s3_bucket.config.arn}/*"
-        ]
-        Condition = {
-          StringNotEquals = {
-            "aws:SourceVpce" = aws_vpc_endpoint.s3.id
-          }
-        }
       }
     ]
   })
 
   depends_on = [
-    aws_s3_bucket_public_access_block.config,
-    aws_vpc_endpoint.s3
+    aws_s3_bucket_public_access_block.config
   ]
 }
 
@@ -380,49 +348,6 @@ resource "aws_s3_bucket_policy" "logs" {
   })
 
   depends_on = [aws_s3_bucket_public_access_block.logs]
-}
-
-# ============================================================================
-# VPC ENDPOINT (keeps S3 traffic within AWS network)
-# ============================================================================
-
-# Get default VPC
-data "aws_vpc" "default" {
-  default = true
-}
-
-# Get default route table
-data "aws_route_table" "default" {
-  vpc_id = data.aws_vpc.default.id
-
-  filter {
-    name   = "association.main"
-    values = ["true"]
-  }
-}
-
-# VPC Endpoint for S3 (Gateway type - no additional cost!)
-resource "aws_vpc_endpoint" "s3" {
-  vpc_id          = data.aws_vpc.default.id
-  service_name    = "com.amazonaws.${var.aws_region}.s3"
-  route_table_ids = [data.aws_route_table.default.id]
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:*"
-        Resource  = "*"
-      }
-    ]
-  })
-
-  tags = {
-    Name        = "${var.instance_name}-s3-endpoint"
-    Environment = var.environment
-  }
 }
 
 # ============================================================================

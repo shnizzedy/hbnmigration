@@ -4,8 +4,6 @@ ci:
     - terraform_tflint
     - terraform_validate
     - terraform_checkov
-    - terragrunt_fmt
-    - terragrunt_validate
     - sync-version
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
@@ -32,8 +30,6 @@ repos:
       - --config=__GIT_WORKING_DIR__/.tflint.hcl
     - id: terraform_validate
     - id: terraform_checkov
-    - id: terragrunt_fmt
-    - id: terragrunt_validate
 - repo: https://github.com/DavidAnson/markdownlint-cli2
   rev: v0.21.0
   hooks:
