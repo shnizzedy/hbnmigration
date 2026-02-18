@@ -30,6 +30,7 @@ if ! command -v uv &> /dev/null; then
     # Set Python 3.12 as default
     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
     update-alternatives --set python3 /usr/bin/python3.12
+    pipx ensurepath
     pipx install --quiet uv
     echo "✓ Python 3.12 installed"
 else
