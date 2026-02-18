@@ -5,6 +5,4 @@ instance_name = ""
 aws_region    = ""
 environment   = ""
 
-enable_session_manager = true
-
 websocket_url = ""
