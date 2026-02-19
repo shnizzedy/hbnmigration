@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 CURRENT_USER="$${SUDO_USER:-$(whoami)}"
+REPO_ROOT="/home/$CURRENT_USER/hbnmigration"
+PYTHON_JOBS_PATH="$REPO_ROOT/python_jobs"
+NODE_JOBS_PATH="$REPO_ROOT/node_jobs"
 echo "============================================"
 echo "Setting up HBN migration monitoring services"
 echo "============================================"
@@ -9,6 +12,7 @@ echo "Instance: ${INSTANCE_NAME}"
 echo "Region: ${AWS_REGION}"
 echo "Environment: ${ENVIRONMENT}"
 echo "Virtual Environment path: ${VENV_PATH}"
+echo "Jobs paths: $PYTHON_JOBS_PATH, $NODE_JOBS_PATH"
 echo "WebSocket URL: ${WEBSOCKET_URL}"
 echo "============================================"
 
