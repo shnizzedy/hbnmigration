@@ -51,6 +51,9 @@ repos:
   hooks:
   - id: mypy
     files: ^python_jobs/src/
+    additional_dependencies:
+      - types-pytz
+      - types-requests
 - repo: local
   hooks:
   - id: sync-version
