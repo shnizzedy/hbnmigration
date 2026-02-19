@@ -76,9 +76,9 @@ mkdir -p /etc/iceberg
 
 # Create virtual environment
 echo "Creating Python virtual environment..."
-if [ ! -d "$VENV_PATH" ]; then
-    uv venv "$VENV_PATH" --python python3.12
-    echo "✓ Virtual environment created at $VENV_PATH"
+if [ ! -d "${VENV_PATH}" ]; then
+    uv venv --python python3.12 "${VENV_PATH}"
+    echo "✓ Virtual environment created at ${VENV_PATH}"
 else
     echo "✓ Virtual environment already exists"
 fi
@@ -89,9 +89,9 @@ chown -R "$CURRENT_USER":"$CURRENT_USER" /opt/app /var/log/app /opt/iceberg
 echo "Installing Python packages..."
 if [ -d "$PYTHON_JOBS_PATH" ] && [ -f "$PYTHON_JOBS_PATH/pyproject.toml" ]; then
     echo "Installing from: $PYTHON_JOBS_PATH"
-    uv pip install --python "$VENV_PATH/bin/python" "$PYTHON_JOBS_PATH"
+    uv pip install --python "${VENV_PATH}/bin/python" "$PYTHON_JOBS_PATH"
 
-    "$VENV_PATH/bin/python" -c "import hbnmigration; print(f'✓ Installed hbnmigration v{hbnmigration.__version__}')" || {
+    "${VENV_PATH}/bin/python" -c "import hbnmigration; print(f'✓ Installed hbnmigration v{hbnmigration.__version__}')" || {
         echo "❌ Failed to import hbnmigration"
         exit 1
     }
@@ -124,13 +124,13 @@ After=network.target
 Type=simple
 User=$CURRENT_USER
 WorkingDirectory=$PYTHON_JOBS_PATH
-Environment="PATH=$VENV_PATH/bin:/usr/local/bin:/usr/bin:/bin"
-Environment="VIRTUAL_ENV=$VENV_PATH"
+Environment="PATH=${VENV_PATH}/bin:/usr/local/bin:/usr/bin:/bin"
+Environment="VIRTUAL_ENV=${VENV_PATH}"
 Environment="PYTHONUNBUFFERED=1"
 Environment="AWS_REGION=${AWS_REGION}"
 Environment="WEBSOCKET_URL=${WEBSOCKET_URL}"
 Environment="ENVIRONMENT=${ENVIRONMENT}"
-ExecStart=$VENV_PATH/bin/python -m hbnmigration.websocket_monitor
+ExecStart=${VENV_PATH}/bin/python -m hbnmigration.websocket_monitor
 Restart=always
 RestartSec=10
 StandardOutput=append:/var/log/app/websocket-monitor.log
@@ -179,8 +179,8 @@ export AWS_REGION=${AWS_REGION}
 export AWS_DEFAULT_REGION=${AWS_REGION}
 export WEBSOCKET_URL=${WEBSOCKET_URL}
 export ENVIRONMENT=${ENVIRONMENT}
-export PATH="/root/.local/bin:$VENV_PATH/bin:\$PATH"
-export VIRTUAL_ENV=$VENV_PATH
+export PATH="/root/.local/bin:${VENV_PATH}/bin:\$PATH"
+export VIRTUAL_ENV=${VENV_PATH}
 export ICEBERG_CATALOG_CONFIG=/etc/iceberg/catalog.yaml
 export ICEBERG_WAREHOUSE=file:///opt/iceberg/warehouse
 EOF
@@ -207,7 +207,7 @@ echo ""
 echo "========================================"
 echo "Setup Complete!"
 echo "========================================"
-echo "Virtual Environment: $VENV_PATH"
+echo "Virtual Environment: ${VENV_PATH}"
 echo "Python package: $PYTHON_JOBS_PATH"
 echo "Node.js package: $NODE_JOBS_PATH"
 echo "========================================"
