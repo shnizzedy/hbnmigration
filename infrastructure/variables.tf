@@ -20,6 +20,12 @@ variable "environment" {
   default     = "production"
 }
 
+variable "venv_path" {
+  description = "Virtual environment path"
+  type        = string
+  default     = "/opt/hbnmigration_venv"
+}
+
 variable "websocket_url" {
   description = "WebSocket URL for the application"
   type        = string

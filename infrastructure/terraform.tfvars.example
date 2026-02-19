@@ -4,5 +4,6 @@ instance_id   = ""
 instance_name = ""
 aws_region    = ""
 environment   = ""
+venv_path     = "/opt/hbnmigration_venv"
 
 websocket_url = ""

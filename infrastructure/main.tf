@@ -22,6 +22,7 @@ locals {
     AWS_REGION    = var.aws_region
     ENVIRONMENT   = var.environment
     WEBSOCKET_URL = var.websocket_url
+    VENV_PATH     = var.venv_path
     INSTANCE_NAME = var.instance_name
   })
 }
@@ -41,7 +42,7 @@ resource "null_resource" "setup_services" {
   }
 
   provisioner "local-exec" {
-    command = "sudo bash ${local_file.setup_script.filename}"
+    command = "sudo -E bash ${local_file.setup_script.filename}"
   }
 
   depends_on = [
