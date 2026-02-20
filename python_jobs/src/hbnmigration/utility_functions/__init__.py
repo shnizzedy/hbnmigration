@@ -1,6 +1,7 @@
 """Utility functions."""
 
 from .custom import (
+    create_tempory_file,
     execute_vars_file,
     fetch_and_save_api_data,
     fetch_api_data,
@@ -19,8 +20,12 @@ from .custom import (
     yesterday,
     yesterday_or_more_recent,
 )
+from .datatypes import Endpoints
+from .logging import initialize_logging
 
 __all__ = [
+    "Endpoints",
+    "create_tempory_file",
     "execute_vars_file",
     "fetch_and_save_api_data",
     "fetch_api_data",
@@ -29,6 +34,7 @@ __all__ = [
     "fetch_api_data3",
     "get_mindlogger_token",
     "get_redcap_event_names",
+    "initialize_logging",
     "new_curious_account",
     "peek_into_dataframe",
     "peek_into_dataframe2",

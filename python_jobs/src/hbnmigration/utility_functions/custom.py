@@ -20,6 +20,11 @@ import pytz
 import requests
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    filename="app.log",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
 
 
 def execute_vars_file(vars_file_path: str) -> None:
@@ -89,17 +94,21 @@ def fetch_and_save_api_data(
 
 @overload
 def _fetch_api_data(
-    url: str, headers: dict, data: dict, _index: Literal[0, 1, 3], spark: None = None
+    url: str,
+    headers: dict,
+    data: dict | str,
+    _index: Literal[0, 1, 3],
+    spark: None = None,
 ) -> pd.DataFrame: ...
 @overload
 def _fetch_api_data(
-    url: str, headers: dict, data: dict, _index: Literal[2], spark: SparkSession
+    url: str, headers: dict, data: dict | str, _index: Literal[2], spark: SparkSession
 ) -> SparkDataFrame: ...
 def _fetch_api_data(
     url: str,
     headers: dict,
-    data: dict,
-    _index: int,
+    data: dict | str,
+    _index: Literal[0, 1, 2, 3],
     spark: Optional[SparkSession] = None,
 ) -> pd.DataFrame | SparkDataFrame:
     """Handle various `fetch_api_data` functions."""
@@ -147,18 +156,20 @@ def _fetch_api_data(
         return pd.DataFrame()
 
 
-def fetch_api_data(url: str, headers: dict, data: dict) -> pd.DataFrame:
+def fetch_api_data(url: str, headers: dict, data: dict | str) -> pd.DataFrame:
     """Fetch REST API response data and load it into a Pandas Dataframe."""
     return _fetch_api_data(url, headers, data, 0)
 
 
-def fetch_api_data1(url: str, headers: dict, data: dict) -> Optional[pd.DataFrame]:
+def fetch_api_data1(
+    url: str, headers: dict, data: dict | str
+) -> Optional[pd.DataFrame]:
     """Fetch REST API response data and load into it a Pandas Dataframe."""
     df = _fetch_api_data(url, headers, data, 1)
     return None if df.empty else df
 
 
-def fetch_api_data3(url: str, headers: dict, data: dict) -> pd.DataFrame:
+def fetch_api_data3(url: str, headers: dict, data: dict | str) -> pd.DataFrame:
     """
     Fetch REST API response data and load it into a Pandas Dataframe.
 
@@ -168,7 +179,7 @@ def fetch_api_data3(url: str, headers: dict, data: dict) -> pd.DataFrame:
 
 
 def fetch_api_data2(
-    url: str, headers: dict, data: dict, spark: SparkSession
+    url: str, headers: dict, data: dict | str, spark: SparkSession
 ) -> SparkDataFrame:
     """Fetch REST API response data and load it into a PySpark Dataframe."""
     return _fetch_api_data(url, headers, data, 2, spark)
@@ -446,9 +457,19 @@ _yesterday_date = date.today() - timedelta(days=1)
 """Date representation of yesterday."""
 
 yesterday = str(_yesterday_date)
-"""`YYYY-MM-DD` date from which to pull Curious data."""
+"""`YYYY-MM-DD` string date format of yesterday."""
 
 
 def yesterday_or_more_recent(date_str: str) -> bool:
     """Return truth value if a string date-time is yesterday or more recent."""
     return datetime.fromisoformat(date_str).date() >= _yesterday_date
+
+
+def create_tempory_file(extension: str = "csv") -> Path:
+    """Create a temporary file, returning the path."""
+    file = NamedTemporaryFile(
+        mode="w", suffix=f".{extension}", delete=False, newline=""
+    )
+    filepath = Path(file.name)
+    file.close()
+    return filepath

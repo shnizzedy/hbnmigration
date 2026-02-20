@@ -34,6 +34,7 @@ dev = [
 ]
 
 [project.scripts]
+ripple-to-redcap = "hbnmigration.from_ripple.to_redcap:main"
 websocket-monitor = "hbnmigration.websocket_monitor:main"
 api-scheduler = "hbnmigration.api_scheduler:main"
 

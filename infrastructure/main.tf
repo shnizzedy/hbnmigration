@@ -24,6 +24,7 @@ locals {
     WEBSOCKET_URL = var.websocket_url
     VENV_PATH     = var.venv_path
     INSTANCE_NAME = var.instance_name
+    USER_GROUP    = var.user_group
   })
 }
 

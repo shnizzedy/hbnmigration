@@ -30,3 +30,8 @@ variable "websocket_url" {
   description = "WebSocket URL for the application"
   type        = string
 }
+
+variable "user_group" {
+  description = "User group to have access to local files."
+  type        = string
+}
