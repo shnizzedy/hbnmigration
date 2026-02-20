@@ -193,6 +193,9 @@ EOF
 
 echo "✓ Configuration files created"
 
+# Set ownership group
+chown -R ":${USER_GROUP}" "$REPO_ROOT"
+
 # Reload and start services
 echo "Configuring systemd services..."
 systemctl daemon-reload
