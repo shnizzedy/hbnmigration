@@ -20,10 +20,11 @@ from .custom import (
     yesterday,
     yesterday_or_more_recent,
 )
-from .datatypes import Endpoints
+from .datatypes import ApiProtocol, Endpoints
 from .logging import initialize_logging
 
 __all__ = [
+    "ApiProtocol",
     "Endpoints",
     "create_tempory_file",
     "execute_vars_file",
