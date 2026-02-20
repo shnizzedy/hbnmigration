@@ -84,3 +84,6 @@ logs/
 
 # Secrets
 _config_variables/
+
+# Tests
+coverage.xml

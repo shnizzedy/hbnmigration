@@ -134,7 +134,7 @@ def _fetch_api_data(
                                 str(tmp_file_path), header=True, inferSchema=True
                             )
                         finally:
-                            tmp_file_path.unlink()
+                            tmp_file_path.unlink(missing_ok=True)
                     case 0 | 1 | _:
                         return pd.read_csv(csv_data, low_memory=False)
             logger.info("Empty response received from the API.")

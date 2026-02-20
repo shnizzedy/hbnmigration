@@ -269,7 +269,10 @@ def cleanup() -> None:
         redcap_variables.redcap_import_file,
         ripple_variables.ripple_import_file,
     ]:
-        filepath.unlink()
+        try:
+            filepath.unlink(missing_ok=True)
+        except FileNotFoundError:
+            logger.warning("%s already does not exist.", filepath)
 
 
 def main(project_status: Literal["dev", "prod"] = "dev") -> None:
