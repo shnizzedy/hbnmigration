@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -272,7 +272,7 @@ def cleanup() -> None:
         filepath.unlink()
 
 
-def main(project_status: Literal["dev", "prod"] = "dev") -> Optional[str]:
+def main(project_status: Literal["dev", "prod"] = "dev") -> None:
     """Transfer data from Ripple to REDCap."""
     project = {
         "dev": {"token": redcap_variables.Tokens.pid757},
@@ -285,9 +285,10 @@ def main(project_status: Literal["dev", "prod"] = "dev") -> Optional[str]:
         push_to_redcap(project[project_status]["token"])
         for ripple_study, ripple_import_file in ripple_import_files.items():
             set_status_in_ripple(ripple_study, ripple_import_file)
+    except NoData:
+        pass
     finally:
         cleanup()
-        return None
 
 
 if __name__ == "__main__":

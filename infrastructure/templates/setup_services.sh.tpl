@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-CURRENT_USER="$${SUDO_USER:-$(whoami)}"
+CURRENT_USER="${USER}"
 REPO_ROOT="/home/${USER_GROUP}/hbnmigration"
 PYTHON_JOBS_PATH="$REPO_ROOT/python_jobs"
 NODE_JOBS_PATH="$REPO_ROOT/node_jobs"
@@ -126,7 +126,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=$CURRENT_USER:${USER_GROUP}
+User=$CURRENT_USER
+Group=${USER_GROUP}
 WorkingDirectory=$PYTHON_JOBS_PATH
 Environment="PATH=${VENV_PATH}/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="VIRTUAL_ENV=${VENV_PATH}"
@@ -151,7 +152,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=$CURRENT_USER:${USER_GROUP}
+User=$CURRENT_USER
+Group=${USER_GROUP}
 WorkingDirectory=$NODE_JOBS_PATH
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 Environment="NODE_ENV=production"

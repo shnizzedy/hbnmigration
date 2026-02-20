@@ -20,11 +20,6 @@ import pytz
 import requests
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(
-    filename="app.log",
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-)
 
 
 def execute_vars_file(vars_file_path: str) -> None:
