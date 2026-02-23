@@ -281,7 +281,7 @@ def cleanup() -> None:
             logger.warning("%s already does not exist.", filepath)
 
 
-def main(project_status: Literal["dev", "prod"] = "dev") -> None:
+def main(project_status: Literal["dev", "prod"] = "prod") -> None:
     """Transfer data from Ripple to REDCap."""
     project = {
         "dev": {"token": redcap_variables.Tokens.pid757},
