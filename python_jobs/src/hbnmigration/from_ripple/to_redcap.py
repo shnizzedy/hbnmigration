@@ -211,7 +211,8 @@ def push_to_redcap(project_token: str) -> None:
         }
 
         r = requests.post(Endpoints.REDCap.base_url, data=data)
-
+        # Raise exception if push fails
+        r.raise_for_status()
         logging.info("HTTP Status: %s\nRecords Inserted: %s", r.status_code, r.text)
 
 
