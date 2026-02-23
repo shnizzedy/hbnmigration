@@ -142,9 +142,6 @@ def set_redcap_columns(
     # Convert MRN to integer
     redcap_df["mrn"] = redcap_df["mrn"].astype(int)
 
-    # Autonumber
-    redcap_df["forceAutoNumber"] = True
-
     return redcap_df[columns_to_keep].drop_duplicates()
 
 
@@ -207,7 +204,7 @@ def push_to_redcap(project_token: str) -> None:
             "format": "csv",
             "type": "flat",
             "overwriteBehavior": "normal",
-            "forceAutoNumber": "false",
+            "forceAutoNumber": "true",
             "data": csv_content,
             "returnContent": "count",
             "returnFormat": "csv",
