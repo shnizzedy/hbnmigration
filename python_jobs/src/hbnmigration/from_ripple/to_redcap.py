@@ -142,7 +142,10 @@ def set_redcap_columns(
     # Convert MRN to integer
     redcap_df["mrn"] = redcap_df["mrn"].astype(int)
 
-    return redcap_df[columns_to_keep].drop_duplicates()
+    if "record_id" not in redcap_df.columns:
+        redcap_df.insert(0, "record_id", "")
+
+    return redcap_df[["record_id", *columns_to_keep]].drop_duplicates()
 
 
 def prepare_redcap_data(df: pd.DataFrame) -> None:
