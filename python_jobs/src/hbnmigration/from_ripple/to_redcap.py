@@ -279,7 +279,7 @@ def cleanup() -> None:
 def main(project_status: Literal["dev", "prod"] = "dev") -> None:
     """Transfer data from Ripple to REDCap."""
     project = {
-        "dev": {"token": redcap_variables.Tokens.pid757},
+        "dev": {"token": redcap_variables.Tokens.pid247},
         "prod": {"token": redcap_variables.Tokens.pid247},
     }
     try:
