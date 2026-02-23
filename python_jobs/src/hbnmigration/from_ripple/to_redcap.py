@@ -244,8 +244,13 @@ def set_status_in_ripple(ripple_study: str, ripple_import_file: str) -> None:
                 headers=ripple_variables.headers["import"],
                 data=file_content,
             )
-            # Raise an exception for bad status codes (4xx or 5xx)
-            response.raise_for_status()
+            try:
+                # Raise an exception for bad status codes (4xx or 5xx)
+                response.raise_for_status()
+            except requests.exceptions.HTTPError:
+                logging.debug(study_import_url)
+                logging.debug(file_content)
+                raise
             logging.info("Request was successful!\nResponse: %s", response.text)
     except FileNotFoundError as e:
         msg = f"Error: The file '{ripple_import_file}' was not found."
