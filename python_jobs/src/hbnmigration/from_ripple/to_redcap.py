@@ -296,4 +296,4 @@ def main(project_status: Literal["dev", "prod"] = "dev") -> None:
 
 
 if __name__ == "__main__":
-    main(project_status="dev")
+    main(project_status="prod")
