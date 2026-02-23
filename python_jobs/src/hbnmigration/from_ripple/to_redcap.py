@@ -142,6 +142,9 @@ def set_redcap_columns(
     # Convert MRN to integer
     redcap_df["mrn"] = redcap_df["mrn"].astype(int)
 
+    # Autonumber
+    redcap_df["forceAutoNumber"] = True
+
     return redcap_df[columns_to_keep].drop_duplicates()
 
 
