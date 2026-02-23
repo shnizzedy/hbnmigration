@@ -108,7 +108,7 @@ def set_redcap_columns(
     columns_to_rename: dict = {"customId": "mrn"},
 ) -> pd.DataFrame:
     """
-    Set appropriate columns. Prepends 'record_id' matching mrn.
+    Set appropriate columns.
 
     Define the columns you want to select:
     Ripple globalId, customId (MRN), contact.*.infos.*.information (contact email).
@@ -139,15 +139,10 @@ def set_redcap_columns(
         axis=1,
     )
     redcap_df.rename(columns=columns_to_rename, inplace=True)
-    # Convert record_id and MRN to integers
+    # Convert MRN to integer
     redcap_df["mrn"] = redcap_df["mrn"].astype(int)
-    # Create the new column 'record_id' from the original 'customId'/mrn
-    # selected_ripple_df['record_id'] = selected_ripple_df['customId']
-    # 1. Create the new column 'record_id' and insert it at the first position (index 0)
-    #    We are taking the values from the original 'customId' column.
-    redcap_df.insert(0, "record_id", redcap_df["mrn"])
 
-    return redcap_df[["record_id", *columns_to_keep]].drop_duplicates()
+    return redcap_df[columns_to_keep].drop_duplicates()
 
 
 def prepare_redcap_data(df: pd.DataFrame) -> None:
