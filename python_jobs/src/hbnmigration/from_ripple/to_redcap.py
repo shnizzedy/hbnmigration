@@ -31,7 +31,7 @@ def request_potential_participants() -> pd.DataFrame:
     """Request Ripple potential participants data via Ripple API Export."""
     ripple_df = pd.concat(
         [
-            ripple_variables.export_from_ripple(
+            Endpoints.Ripple.export_from_ripple(
                 ripple_study,
                 {
                     "surveyExportSince": yesterday,

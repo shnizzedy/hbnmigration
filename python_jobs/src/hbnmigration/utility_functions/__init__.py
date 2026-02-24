@@ -20,11 +20,15 @@ from .custom import (
     yesterday,
     yesterday_or_more_recent,
 )
-from .datatypes import Endpoints
+from .datatypes import ApiProtocol, Credentials, Endpoints
 from .logging import initialize_logging
+from .secrets import ImportWithFallback
 
 __all__ = [
+    "ApiProtocol",
+    "Credentials",
     "Endpoints",
+    "ImportWithFallback",
     "create_tempory_file",
     "execute_vars_file",
     "fetch_and_save_api_data",

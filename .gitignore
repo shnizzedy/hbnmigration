@@ -83,7 +83,11 @@ build/
 logs/
 
 # Secrets
-_config_variables/
+**/_config_variables/**/*
+!**/_config_variables/
+!**/_config_variables/**/
+!**/_config_variables/**/__init__.py
+!**/_config_variables/**/*.pyi
 
 # Tests
 coverage.xml
