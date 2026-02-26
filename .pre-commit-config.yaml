@@ -50,7 +50,11 @@ repos:
   rev: v1.19.1
   hooks:
   - id: mypy
+    exclude: \**/_config_variables/.*_variables/__init__\.py$
     files: ^python_jobs/src/
+    additional_dependencies:
+      - types-pytz
+      - types-requests
 - repo: local
   hooks:
   - id: sync-version

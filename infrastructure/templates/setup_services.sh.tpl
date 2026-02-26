@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
-CURRENT_USER="$${SUDO_USER:-$(whoami)}"
-REPO_ROOT="/home/$CURRENT_USER/hbnmigration"
+CURRENT_USER="${USER}"
+REPO_ROOT="/home/${USER_GROUP}/hbnmigration"
 PYTHON_JOBS_PATH="$REPO_ROOT/python_jobs"
 NODE_JOBS_PATH="$REPO_ROOT/node_jobs"
 echo "============================================"
 echo "Setting up HBN migration monitoring services"
 echo "============================================"
-echo "Current User: $CURRENT_USER"
+echo "Current User: $CURRENT_USER:${USER_GROUP}"
 echo "Instance: ${INSTANCE_NAME}"
 echo "Region: ${AWS_REGION}"
 echo "Environment: ${ENVIRONMENT}"
@@ -87,7 +87,7 @@ else
     echo "✓ Virtual environment already exists"
 fi
 
-chown -R "$CURRENT_USER":"$CURRENT_USER" /opt/app /var/log/app /opt/iceberg
+chown -R "$CURRENT_USER":"${USER_GROUP}" /opt/app /var/log/app /opt/iceberg
 
 # Install Python packages
 echo "Installing Python packages..."
@@ -127,6 +127,7 @@ After=network.target
 [Service]
 Type=simple
 User=$CURRENT_USER
+Group=${USER_GROUP}
 WorkingDirectory=$PYTHON_JOBS_PATH
 Environment="PATH=${VENV_PATH}/bin:/usr/local/bin:/usr/bin:/bin"
 Environment="VIRTUAL_ENV=${VENV_PATH}"
@@ -152,6 +153,7 @@ After=network.target
 [Service]
 Type=simple
 User=$CURRENT_USER
+Group=${USER_GROUP}
 WorkingDirectory=$NODE_JOBS_PATH
 Environment="PATH=/usr/local/bin:/usr/bin:/bin"
 Environment="NODE_ENV=production"
@@ -175,7 +177,7 @@ catalog:
     type: hadoop
     warehouse: file:///opt/iceberg/warehouse
 EOF
-chown "$CURRENT_USER":"$CURRENT_USER" /etc/iceberg/catalog.yaml
+chown "$CURRENT_USER":"${USER_GROUP}" /etc/iceberg/catalog.yaml
 
 # Create environment files
 cat > /etc/profile.d/app.sh <<EOF
