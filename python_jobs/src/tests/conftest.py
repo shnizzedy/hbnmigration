@@ -83,19 +83,31 @@ def create_participant_df(  # noqa: PLR0913
     """
     Create participant DataFrames with flexible defaults.
 
-    Args:
-        global_ids: List of global IDs
-        custom_ids: List of custom IDs
-        first_names: List of first names
-        last_names: List of last names
-        consent_forms: List of consent form statuses
-        contact_types: List of contact types
-        contact_info: List of contact information
-        import_types: List of import types
-        **kwargs: Additional columns to add
+    Parameters
+    ----------
+    global_ids
+        List of global IDs
+    custom_ids
+        List of custom IDs
+    first_names
+        List of first names
+    last_names
+        List of last names
+    consent_forms
+        List of consent form statuses
+    contact_types
+        List of contact types
+    contact_info
+        List of contact information
+    import_types
+        List of import types
+    **kwargs
+        Additional columns to add
 
-    Returns:
-        pd.DataFrame: Participant data
+    Returns
+    -------
+    pd.DataFrame
+        Participant data
 
     """
     # Determine length from first provided list or default to 1
@@ -150,7 +162,7 @@ def participant_without_email():
 
 @pytest.fixture
 def send_to_redcap_participant():
-    """Participant with 'Send to RedCap' consent status."""
+    """Return participant with 'Send to RedCap' consent status."""
     return create_participant_df(
         global_ids=["TEST003"],
         custom_ids=[99999],
@@ -161,7 +173,7 @@ def send_to_redcap_participant():
 
 @pytest.fixture
 def swamp_thing_participant():
-    """Fixture providing Alec Holland's data."""
+    """Return Dr. Alec Holland's data."""
     return create_participant_df(
         global_ids=["ST001"],
         custom_ids=[12345],
@@ -174,7 +186,7 @@ def swamp_thing_participant():
 
 @pytest.fixture
 def parliament_of_trees_participants():
-    """Fixture providing multiple Parliament of Trees members."""
+    """Provide multiple Parliament of Trees members."""
     return create_participant_df(
         global_ids=["ST001", "AA001", "TE001"],
         custom_ids=[12345, 67890, 11111],
@@ -187,7 +199,7 @@ def parliament_of_trees_participants():
 
 @pytest.fixture
 def sample_ripple_data():
-    """Sample Ripple data with multiple participants - Alec Holland & Abby Arcane."""
+    """Return Ripple data with multiple participants - Alec Holland & Abby Arcane."""
     return create_participant_df(
         global_ids=["ST001", "AA001", "TE001", "WOO001"],
         custom_ids=[12345, 67890, 11111, 22222],
@@ -205,7 +217,7 @@ def sample_ripple_data():
 
 @pytest.fixture
 def anton_arcane_corrupted_data():
-    """Fixture providing Anton Arcane's corrupted/rejected participant data."""
+    """Provide corrupted / rejected participant data."""
     return create_participant_df(
         global_ids=["ANT001"],
         custom_ids=[66666],
@@ -215,6 +227,46 @@ def anton_arcane_corrupted_data():
         contact_types=["phone"],
         contact_info=["666-666-6666"],
         import_types=["HBN - Rejected"],
+    )
+
+
+@pytest.fixture
+def mock_redcap_existing_subjects():
+    """Mock existing REDCap subjects - Alec and Abby already in system."""
+    return pd.DataFrame(
+        {
+            "mrn": [12345, 67890],
+            "record_id": [1, 2],
+        }
+    )
+
+
+@pytest.fixture
+def incoming_subjects_mixed():
+    """Return subjects with mix of new and existing."""
+    return pd.DataFrame(
+        {
+            "record_id": [999, 998, 997],
+            "mrn": [12345, 67890, 99001],  # First two exist, last is new
+            "email_consent": [
+                "alec@swamp.com",
+                "abby@parliament.org",
+                "bella@garden.green",
+            ],
+        }
+    )
+
+
+@pytest.fixture
+def bella_garten_participant():
+    """Return data for the Gardener."""
+    return create_participant_df(
+        global_ids=["BG001"],
+        custom_ids=[99001],
+        first_names=["Bella"],
+        last_names=["Garten"],
+        contact_info=["bella@garden.green"],
+        import_types=["HBN - Main"],
     )
 
 
@@ -315,7 +367,7 @@ def mock_importable_module():
 
 
 class FallbackDataDict(TypedDict):
-    """Typing for fallback data dict."""
+    """Provide typing for fallback data dict."""
 
     parliament: dict[str, list[str]]
     avatars: list[str]
@@ -324,7 +376,7 @@ class FallbackDataDict(TypedDict):
 
 @pytest.fixture
 def swamp_thing_fallback_data() -> FallbackDataDict:
-    """Complex fallback data structure for testing - Parliament of Trees structure."""
+    """Store complex fallback data structure for testing."""
     return {
         "parliament": {
             "trees": ["Yggdrasil", "Ghost Orchid"],
@@ -364,7 +416,7 @@ def mock_parliament_object():
 
 @pytest.fixture
 def patched_main_workflow():
-    """Context manager for patching main workflow dependencies."""
+    """Provide context manager for patching main workflow dependencies."""
     patches = {
         "cleanup": "hbnmigration.from_ripple.to_redcap.cleanup",
         "set_status": "hbnmigration.from_ripple.to_redcap.set_status_in_ripple",
@@ -427,7 +479,7 @@ def assert_has_name_attribute(result: Any, expected_name: str) -> None:
 
 
 # ============================================================================
-# Helper Functions - Module Mocking
+# Module Mocking
 # ============================================================================
 
 
@@ -436,15 +488,14 @@ def create_mock_module_in_sys(
     module_path: str, attributes: Optional[Dict[str, Any]] = None
 ):
     """
-    Context manager to temporarily add mock module to sys.modules.
+    Return context manager to temporarily add mock module to sys.modules.
 
-    Args:
-        module_path: String path like 'parent.child.module'
-        attributes: Dict of attributes to add to module
-
-    Usage:
-        with create_mock_module_in_sys('test.module', {'attr': 'value'}):
-            # test code here
+    Parameters
+    ----------
+    module_path
+        String path like 'parent.child.module'
+    attributes
+        Dict of attributes to add to module
 
     """
     mock_mod = Mock()

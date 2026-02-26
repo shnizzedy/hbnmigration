@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 import logging
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Optional
 
 import numpy as np
 import pandas as pd
@@ -11,7 +11,7 @@ import requests
 
 from .._config_variables import redcap_variables, ripple_variables
 from ..exceptions import NoData
-from ..utility_functions import initialize_logging, yesterday
+from ..utility_functions import fetch_api_data, initialize_logging, yesterday
 
 initialize_logging()
 logger = logging.getLogger(__name__)
@@ -53,21 +53,21 @@ def request_potential_participants() -> pd.DataFrame:
         ]
     )
     row_count = ripple_df.shape[0]
-    logging.info("Ripple Returned Rows: %s", row_count)
+    logger.info("Ripple Returned Rows: %s", row_count)
     # Check if the returned DataFrame is empty to infer the API status.
     if ripple_df.empty:
         # If the DataFrame is empty, the API call may have failed or returned no data.
-        logging.info("API request returned no data.")
+        logger.info("API request returned no data.")
         raise NoData
     # Filter the dataFrame on cv.consent_form and contact.2.infos.1.contactType
     # filtered_ripple_df = ripple_df[ripple_df['cv.consent_form'] == 'Send to RedCap']
     filtered_ripple_df = ripple_df[(ripple_df["cv.consent_form"] == "Send to RedCap")]
     if filtered_ripple_df.empty:
         # If the DataFrame is empty, the API call may have failed or returned no data.
-        logging.info('There are no participants marked "Send to RedCap".')
+        logger.info('There are no participants marked "Send to RedCap".')
         raise NoData
     row_count = filtered_ripple_df.shape[0]
-    logging.info(
+    logger.info(
         "API request successful and data received.\nRipple Filtered Rows: %s", row_count
     )
     return filtered_ripple_df
@@ -125,8 +125,57 @@ def prepare_redcap_data(df: pd.DataFrame) -> None:
     """Prepare Ripple API returned data to be imported into REDCap."""
     copy_selected_redcap_df = set_redcap_columns(df)
 
-    # Save the new dataframe to a CSV file
-    copy_selected_redcap_df.to_csv(redcap_variables.redcap_import_file, index=False)
+    # Split into update and new
+    to_update, new_subjects = get_redcap_subjects_to_update(copy_selected_redcap_df)
+
+    # Save the new dataframes to CSV files
+    if not to_update.empty:
+        to_update.to_csv(redcap_variables.redcap_update_file, index=False)
+    if not new_subjects.empty:
+        new_subjects.to_csv(redcap_variables.redcap_import_file, index=False)
+
+
+def get_redcap_subjects_to_update(
+    df: pd.DataFrame,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Get subjects from REDCap that need to be updated vs. new subjects.
+
+    Returns
+    -------
+    pd.DataFrame
+        subjects to update
+    pd.DataFrame
+        new subjects
+
+    """
+    redcap_participant_consent_data = {
+        "token": redcap_variables.Tokens.pid247,
+        "content": "record",
+        "action": "export",
+        "format": "csv",
+        "type": "flat",
+        "csvDelimiter": "",
+        "fields": "mrn,record_id",
+        "rawOrLabel": "raw",
+        "rawOrLabelHeaders": "raw",
+        "exportCheckboxLabel": "false",
+        "exportSurveyFields": "false",
+        "exportDataAccessGroups": "false",
+        "returnFormat": "csv",
+    }
+    df_redcap_consent_instruments = fetch_api_data(
+        Endpoints.REDCap.base_url,
+        redcap_variables.headers,
+        redcap_participant_consent_data,
+    )
+    mask = df["mrn"].isin(df_redcap_consent_instruments["mrn"])
+    to_update = df[mask].copy()
+    to_update = to_update.drop(columns=["record_id"]).merge(
+        df_redcap_consent_instruments[["mrn", "record_id"]], on="mrn", how="left"
+    )
+    to_update = to_update[["record_id", "mrn", "email_consent"]]
+    return to_update, df[~mask].copy()
 
 
 def prepare_ripple_to_ripple(df: pd.DataFrame) -> dict[str, str]:
@@ -160,18 +209,22 @@ def prepare_ripple_to_ripple(df: pd.DataFrame) -> dict[str, str]:
     return ripple_import_files
 
 
-def push_to_redcap(project_token: str) -> None:
+def push_to_redcap(project_token: str, update: Optional[bool] = None) -> None:
     """Push the HBN Potential Participants MRN and Contact email to RedCap."""
-    # Read the content of the CSV file
-    try:
-        with open(redcap_variables.redcap_import_file, "r") as file:
-            csv_content = file.read()
-    except FileNotFoundError:
-        logger.exception(
-            "Error: The file '%s' was not found.", redcap_variables.redcap_import_file
-        )
-        # You might want to create a placeholder or exit
-        csv_content = ""  # Default to empty string if file not found
+    if update is None:
+        # Try both
+        for _update in [True, False]:
+            push_to_redcap(project_token, _update)
+        return
+    filepath = (
+        redcap_variables.redcap_update_file
+        if update
+        else redcap_variables.redcap_import_file
+    )
+    if not filepath.exists() or filepath.stat().st_size == 0:
+        return
+    with open(filepath, "r") as file:
+        csv_content = file.read()
     if csv_content:
         data = {
             "token": project_token,
@@ -180,7 +233,7 @@ def push_to_redcap(project_token: str) -> None:
             "format": "csv",
             "type": "flat",
             "overwriteBehavior": "normal",
-            "forceAutoNumber": "true",
+            "forceAutoNumber": str(not update).lower(),
             "data": csv_content,
             "returnContent": "count",
             "returnFormat": "csv",
@@ -189,7 +242,7 @@ def push_to_redcap(project_token: str) -> None:
         r = requests.post(Endpoints.REDCap.base_url, data=data)
         # Raise exception if push fails
         r.raise_for_status()
-        logging.info("HTTP Status: %s\nRecords Inserted: %s", r.status_code, r.text)
+        logger.info("HTTP Status: %s\nRecords Inserted: %s", r.status_code, r.text)
 
 
 def set_status_in_ripple(ripple_study: str, ripple_import_file: str) -> None:
@@ -204,12 +257,12 @@ def set_status_in_ripple(ripple_study: str, ripple_import_file: str) -> None:
 
         # Check if the DataFrame is not empty
         if df.empty:
-            logging.info(
+            logger.info(
                 "The Excel file %s is empty. No API request was sent.",
                 ripple_import_file,
             )
             return
-        logging.info("File contains data. Proceeding with API request…")
+        logger.info("File contains data. Proceeding with API request…")
         study_import_url = Endpoints.Ripple.import_data(ripple_study)
         with open(ripple_import_file, "rb") as ripple_file:
             file_content = ripple_file.read()
@@ -225,7 +278,7 @@ def set_status_in_ripple(ripple_study: str, ripple_import_file: str) -> None:
                 logging.debug(study_import_url)
                 logging.debug(file_content)
                 raise
-            logging.info("Request was successful!\nResponse: %s", response.text)
+            logger.info("Request was successful!\nResponse: %s", response.text)
     except FileNotFoundError as e:
         msg = f"Error: The file '{ripple_import_file}' was not found."
         raise FileNotFoundError(msg) from e
@@ -236,15 +289,16 @@ def set_status_in_ripple(ripple_study: str, ripple_import_file: str) -> None:
     except Exception as e:
         # A general exception for other potential errors
         # (e.g., file is not a valid Excel file)
-        logging.exception("An unexpected error occurred: %s", e)  # noqa: TRY401
+        logger.exception("An unexpected error occurred: %s", e)  # noqa: TRY401
         raise
 
 
-def cleanup() -> None:
+def cleanup(temp_files: list[str | Path]) -> None:
     """Delete temporary files."""
     for filepath in [
         redcap_variables.redcap_import_file,
-        ripple_variables.ripple_import_file,
+        redcap_variables.redcap_update_file,
+        *[Path(filepath) for filepath in temp_files],
     ]:
         try:
             filepath.unlink(missing_ok=True)
@@ -258,6 +312,7 @@ def main(project_status: Literal["dev", "prod"] = "prod") -> None:
         "dev": {"token": redcap_variables.Tokens.pid757},
         "prod": {"token": redcap_variables.Tokens.pid247},
     }
+    ripple_import_files: dict[str, str] = {}
     try:
         filtered_ripple_df = request_potential_participants()
         prepare_redcap_data(filtered_ripple_df)
@@ -268,7 +323,7 @@ def main(project_status: Literal["dev", "prod"] = "prod") -> None:
     except NoData:
         pass
     finally:
-        cleanup()
+        cleanup(list(ripple_import_files.values()))
 
 
 if __name__ == "__main__":

@@ -15,3 +15,7 @@ headers = ImportWithFallback.literal(".ripple_variables", "headers", {})
 
 study_ids = ImportWithFallback.literal(".ripple_variables", "study_ids", {})
 """Ripple study IDs."""
+
+ripple_import_file = ImportWithFallback.literal(
+    ".ripple_variables", "ripple_import_file", NotImplemented
+)
