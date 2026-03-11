@@ -642,13 +642,13 @@ def patch_redcap_fetch_dependencies(
     with ExitStack() as stack:
         mocks = {
             "fetch_api": stack.enter_context(
-                patch("hbnmigration.from_redcap.to_redcap.fetch_api_data")
+                patch("hbnmigration.from_redcap.from_redcap.fetch_api_data")
             ),
             "endpoints": stack.enter_context(
-                patch("hbnmigration.from_redcap.to_redcap.Endpoints")
+                patch("hbnmigration.from_redcap.from_redcap.Endpoints")
             ),
             "redcap_vars": stack.enter_context(
-                patch("hbnmigration.from_redcap.to_redcap.redcap_variables")
+                patch("hbnmigration.from_redcap.from_redcap.redcap_variables")
             ),
         }
 
