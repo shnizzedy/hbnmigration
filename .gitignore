@@ -33,6 +33,8 @@ generated_*
 
 # Lockfiles
 .lock
+**/.terraform.lock
+**/terraform.lock
 !**/.terraform.lock.hcl
 
 # Linting temporary files

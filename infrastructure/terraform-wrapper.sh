@@ -1,24 +1,9 @@
 #!/bin/bash
 set -e
 
-# Source terraform.tfvars to get log_directory
-if [ -f terraform.tfvars ]; then
-    LOG_DIR=$(grep '^log_directory' terraform.tfvars | cut -d'"' -f2 | tr -d ' ')
-else
-    LOG_DIR="/var/log/hbnmigration"
-fi
-
-# Resolve relative paths
-if [[ "$LOG_DIR" != /* ]]; then
-    PROJECT_ROOT=$(grep '^project_root' terraform.tfvars | cut -d'"' -f2 | tr -d ' ' || echo "/opt/hbnmigration")
-    LOG_DIR="${PROJECT_ROOT}/${LOG_DIR}"
-fi
-
-LOCK_FILE="${LOG_DIR}/terraform.lock"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOCK_FILE="$SCRIPT_DIR/.terraform.lock"
 LOCK_FD=200
-
-# Ensure log directory exists
-sudo mkdir -p "$LOG_DIR"
 
 # Function to acquire lock
 acquire_lock() {
@@ -28,7 +13,7 @@ acquire_lock() {
         echo "Lock file: $LOCK_FILE"
         echo ""
         echo "If you're sure no other process is running, remove the lock:"
-        echo "  sudo rm $LOCK_FILE"
+        echo "  rm $LOCK_FILE"
         exit 1
     fi
     echo "✓ Lock acquired: $LOCK_FILE"
