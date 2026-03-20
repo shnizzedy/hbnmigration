@@ -19,7 +19,7 @@ terraform {
 # Workspace-specific configuration
 locals {
   workspace_suffix = terraform.workspace == "default" ? "" : "-${terraform.workspace}"
-  workspace_dir    = "${var.project_root}${local.workspace_suffix}"
+  workspace_dir    = var.project_root
   venv_full_path   = "${local.workspace_dir}/${var.venv_path}"
   log_full_path    = "${var.log_directory}${local.workspace_suffix}"
 
